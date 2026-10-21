@@ -1,5 +1,6 @@
 package com.example.prestamos.Service;
 
+
 import com.example.prestamos.DTO.PrestamoRequest;
 import com.example.prestamos.Model.Prestamo;
 import java.util.List;
@@ -11,7 +12,6 @@ public interface PrestamoService {
 
     Prestamo guardarPrestamo(PrestamoRequest request);
 
-    Prestamo guardarPrestamo(Prestamo prestamo);
     Prestamo actualizarPrestamo(Long id, Prestamo detalles);
     void eliminarPrestamo(Long id);
 }
