@@ -1,5 +1,6 @@
 package com.example.prestamos.Service.Impl;
 
+import com.example.prestamos.DTO.PrestamoRequest;
 import com.example.prestamos.Model.Prestamo;
 import com.example.prestamos.Repository.PrestamoRepository;
 import com.example.prestamos.Service.PrestamoService;
@@ -23,6 +24,11 @@ public class PrestamoServiceImpl implements PrestamoService {
     @Override
     public Optional<Prestamo> obtenerPrestamoPorId(Long id) {
         return prestamoRepository.findById(id);
+    }
+
+    @Override
+    public Prestamo guardarPrestamo(PrestamoRequest request) {
+        return null;
     }
 
     @Override
