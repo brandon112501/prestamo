@@ -1,25 +1,19 @@
 package com.example.prestamos.Service.Impl;
 
-import com.example.prestamos.DTO.PrestamoRequest;
-import com.example.prestamos.Model.Herramienta;
 import com.example.prestamos.Model.Prestamo;
-import com.example.prestamos.Repository.HerramientaRepository;
 import com.example.prestamos.Repository.PrestamoRepository;
 import com.example.prestamos.Service.PrestamoService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class PrestamoServiceImpl implements PrestamoService {
 
-    private final PrestamoRepository prestamoRepository;
-    private final HerramientaRepository herramientaRepository;
-
-    public PrestamoServiceImpl(PrestamoRepository prestamoRepository, HerramientaRepository herramientaRepository) {
-        this.prestamoRepository = prestamoRepository;
-        this.herramientaRepository = herramientaRepository;
-    }
+    @Autowired
+    private PrestamoRepository prestamoRepository;
 
     @Override
     public List<Prestamo> listarPrestamos() {
@@ -27,32 +21,27 @@ public class PrestamoServiceImpl implements PrestamoService {
     }
 
     @Override
-    public List<Prestamo> listarPorHerramienta(Long herramientaId) {
-        return prestamoRepository.findByHerramientaId(herramientaId);
+    public Optional<Prestamo> obtenerPrestamoPorId(Long id) {
+        return prestamoRepository.findById(id);
     }
 
     @Override
-    @Transactional
-    public Prestamo registrarPrestamo(PrestamoRequest request) {
-        Herramienta herramienta = herramientaRepository.findById(request.getHerramientaId())
-                .orElseThrow(() -> new RuntimeException("La herramienta no existe"));
-
-        if (request.getCantidad() <= 0) {
-            throw new IllegalArgumentException("La cantidad a prestar debe ser mayor a cero.");
-        }
-
-        if (request.getCantidad() > herramienta.getCantidad()) {
-            throw new IllegalArgumentException("Cantidad solicitada superior a las unidades disponibles.");
-        }
-        herramienta.setCantidad(herramienta.getCantidad() - request.getCantidad());
-        herramientaRepository.save(herramienta);
-
-        Prestamo prestamo = new Prestamo();
-        prestamo.setResponsable(request.getResponsable());
-        prestamo.setFechaPrestamo(request.getFechaPrestamo());
-        prestamo.setCantidad(request.getCantidad());
-        prestamo.setHerramienta(herramienta);
-
+    public Prestamo guardarPrestamo(Prestamo prestamo) {
         return prestamoRepository.save(prestamo);
+    }
+
+    @Override
+    public Prestamo actualizarPrestamo(Long id, Prestamo detalles) {
+        return prestamoRepository.findById(id).map(prestamo -> {
+            prestamo.setResponsable(detalles.getResponsable());
+            prestamo.setFechaPrestamo(detalles.getFechaPrestamo());
+            prestamo.setCantidad(detalles.getCantidad());
+            prestamo.setHerramienta(detalles.getHerramienta());
+            return prestamoRepository.save(prestamo);
+        }).orElseThrow(() -> new RuntimeException("Prestamo no encontrado con id: " + id));
+    }
+    @Override
+    public void eliminarPrestamo(Long id) {
+        prestamoRepository.deleteById(id);
     }
 }

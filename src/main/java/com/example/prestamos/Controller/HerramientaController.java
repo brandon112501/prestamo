@@ -27,4 +27,26 @@ public class HerramientaController {
     public ResponseEntity<Herramienta> registrarHerramienta(@Valid @RequestBody Herramienta herramienta) {
         return ResponseEntity.ok(herramientasService.guardarHerramienta(herramienta));
     }
+    @GetMapping("/{id}")
+    public ResponseEntity<Herramienta> consultarHerramientaPorId(@PathVariable Long id) {
+        return herramientasService.obtenerHerramientaPorId(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<Herramienta> actualizarHerramienta(@PathVariable Long id, @RequestBody Herramienta herramienta) {
+        try {
+            Herramienta actualizada = herramientasService.actualizarHerramienta(id, herramienta);
+            return ResponseEntity.ok(actualizada);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> eliminarHerramienta(@PathVariable Long id) {
+        herramientasService.eliminarHerramienta(id);
+        return ResponseEntity.noContent().build();
+    }
 }

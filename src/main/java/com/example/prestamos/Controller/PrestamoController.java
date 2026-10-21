@@ -1,11 +1,12 @@
 package com.example.prestamos.Controller;
 
-import com.example.prestamos.DTO.PrestamoRequest;
 import com.example.prestamos.Model.Prestamo;
 import com.example.prestamos.Service.PrestamoService;
 import jakarta.validation.Valid;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
 
 @RestController
@@ -13,30 +14,44 @@ import java.util.List;
 @CrossOrigin(origins = "*")
 public class PrestamoController {
 
-    private final PrestamoService prestamoService;
+    @Autowired
+    private PrestamoService prestamoService;
 
-    // Inyección por constructor sin @Autowired
-    public PrestamoController(PrestamoService prestamoService) {
-        this.prestamoService = prestamoService;
-    }
-
+    // 1. LISTAR TODOS
     @GetMapping
-    public List<Prestamo> consultarPrestamos() {
+    public List<Prestamo> listarPrestamos() {
         return prestamoService.listarPrestamos();
     }
 
-    @GetMapping("/herramienta/{id}")
-    public List<Prestamo> consultarPorHerramienta(@PathVariable Long id) {
-        return prestamoService.listarPorHerramienta(id);
+    // 2. BUSCAR POR ID
+    @GetMapping("/{id}")
+    public ResponseEntity<Prestamo> consultarPrestamoPorId(@PathVariable Long id) {
+        return prestamoService.obtenerPrestamoPorId(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 
+    // 3. CREAR / REGISTRAR
     @PostMapping
-    public ResponseEntity<?> registrarPrestamo(@Valid @RequestBody PrestamoRequest request) {
+    public ResponseEntity<Prestamo> registrarPrestamo(@Valid @RequestBody Prestamo prestamo) {
+        return ResponseEntity.ok(prestamoService.guardarPrestamo(prestamo));
+    }
+
+    // 4. ACTUALIZAR
+    @PutMapping("/{id}")
+    public ResponseEntity<Prestamo> actualizarPrestamo(@PathVariable Long id, @RequestBody Prestamo prestamo) {
         try {
-            Prestamo prestamo = prestamoService.registrarPrestamo(request);
-            return ResponseEntity.ok(prestamo);
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            Prestamo actualizado = prestamoService.actualizarPrestamo(id, prestamo);
+            return ResponseEntity.ok(actualizado);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
         }
+    }
+
+    // 5. ELIMINAR
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> eliminarPrestamo(@PathVariable Long id) {
+        prestamoService.eliminarPrestamo(id);
+        return ResponseEntity.noContent().build();
     }
 }
